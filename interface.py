@@ -1,7 +1,15 @@
 from Tkinter import Tk, Text, BOTH, Menu, W, N, E, S, INSERT, END
+import os, random
 from ttk import Frame, Button, Label, Style
 import tkFileDialog
 from tkFileDialog import askopenfilename
+import os
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from KaggleWord2VecUtility import KaggleWord2VecUtility
+import pandas as pd
+import numpy as np
+
 
 
 class Example(Frame):
@@ -12,8 +20,18 @@ class Example(Frame):
         self.parent = parent
         
         self.initUI()
+        self.trainAI()
+        
+    def trainAI(self):
+        train = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', 'labeledTrainData.tsv'), header=0, delimiter="\t", quoting=3)
+        test = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', 'testData.tsv'), header=0, delimiter="\t", quoting=3 )
         
     def initUI(self):
+        
+        #BUTTON CALLBACKS
+        def giveRandom():
+            print random.choice(os.listdir("C:\\test\neg"))
+
         #MENU
         menubar = Menu(self.parent)
         self.parent.config(menu=menubar)
@@ -62,11 +80,10 @@ class Example(Frame):
         abtn.grid(row=0, column=2, sticky=N)
         gbtn = Button(self, text="Generate")
         gbtn.grid(row=1, column=2, sticky=N) 
-        ggbtn = Button(self, text="Random")
+        ggbtn = Button(self, text="Random", command=giveRandom)
         ggbtn.grid(row=2, column=2, sticky=N)
 
     def onOpen(self):
-
         ftypes = [('Text Files', '*.txt'), ('All files', '*')]
         dlg = tkFileDialog.Open(self, filetypes = ftypes)
         fl = dlg.show()
@@ -76,7 +93,6 @@ class Example(Frame):
             self.area.insert(END, text)
 
     def readFile(self, filename):
-
         f = open(filename, "r")
         text = f.read()
         filenamearr = filename.split("_")
@@ -84,6 +100,9 @@ class Example(Frame):
         self.scorebox.insert(INSERT, score[0])
         print "score " + score[0]
         return text
+        
+    
+        
               
 
 def main():
