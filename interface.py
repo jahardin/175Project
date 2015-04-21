@@ -3,12 +3,6 @@ import os, random
 from ttk import Frame, Button, Label, Style
 import tkFileDialog
 from tkFileDialog import askopenfilename
-import os
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.ensemble import RandomForestClassifier
-from KaggleWord2VecUtility import KaggleWord2VecUtility
-import pandas as pd
-import numpy as np
 
 
 
@@ -20,12 +14,6 @@ class Example(Frame):
         self.parent = parent
         
         self.initUI()
-        self.trainAI()
-        
-    def trainAI(self):
-        train = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', 'labeledTrainData.tsv'), header=0, delimiter="\t", quoting=3)
-        test = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', 'testData.tsv'), header=0, delimiter="\t", quoting=3 )
-        
     def initUI(self):
         
         #BUTTON CALLBACKS

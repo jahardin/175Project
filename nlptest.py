@@ -1,13 +1,13 @@
 import re, math, collections, itertools, os
 import nltk, nltk.classify.util, nltk.metrics
-from nltk.classify import NaiveBayesClassifier
+from nltk.classify import NaiveBayesClassifier, DecisionTreeClassifier
 from nltk.metrics import BigramAssocMeasures
 from nltk.probability import FreqDist, ConditionalFreqDist
 
 
-POLARITY_DATA_DIR = 'C:\\Users\\jake\\Desktop\\175Project'
-RT_POLARITY_POS_FILE = os.path.join(POLARITY_DATA_DIR, 'rt-polarity-pos.txt')
-RT_POLARITY_NEG_FILE = os.path.join(POLARITY_DATA_DIR, 'rt-polarity-neg.txt')
+DIR_ROOT = 'C:\\Users\\jake\\Desktop\\175Project'
+POS_FILE = os.path.join(DIR_ROOT, 'combinedPos')
+NEG_FILE = os.path.join(DIR_ROOT, 'combinedNeg')
 
 
 #this function takes a feature selection mechanism and returns its performance in a variety of metrics
@@ -16,12 +16,12 @@ def evaluate_features(feature_select):
 	negFeatures = []
 	#http://stackoverflow.com/questions/367155/splitting-a-string-into-words-and-punctuation
 	#breaks up the sentences into lists of individual words (as selected by the input mechanism) and appends 'pos' or 'neg' after each list
-	with open(RT_POLARITY_POS_FILE, 'r') as posSentences:
+	with open(POS_FILE, 'r') as posSentences:
 		for i in posSentences:
 			posWords = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
 			posWords = [feature_select(posWords), 'pos']
 			posFeatures.append(posWords)
-	with open(RT_POLARITY_NEG_FILE, 'r') as negSentences:
+	with open(NEG_FILE, 'r') as negSentences:
 		for i in negSentences:
 			negWords = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
 			negWords = [feature_select(negWords), 'neg']
@@ -34,6 +34,7 @@ def evaluate_features(feature_select):
 	trainFeatures = posFeatures[:posCutoff] + negFeatures[:negCutoff]
 	testFeatures = posFeatures[posCutoff:] + negFeatures[negCutoff:]
 
+    #CLASSIFIERS
 	#trains a Naive Bayes Classifier
 	classifier = NaiveBayesClassifier.train(trainFeatures)	
 
@@ -69,11 +70,11 @@ def create_word_scores():
 	#creates lists of all positive and negative words
 	posWords = []
 	negWords = []
-	with open(RT_POLARITY_POS_FILE, 'r') as posSentences:
+	with open(POS_FILE, 'r') as posSentences:
 		for i in posSentences:
 			posWord = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
 			posWords.append(posWord)
-	with open(RT_POLARITY_NEG_FILE, 'r') as negSentences:
+	with open(NEG_FILE, 'r') as negSentences:
 		for i in negSentences:
 			negWord = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
 			negWords.append(negWord)
