@@ -14,10 +14,10 @@ class GenMarkov():
         self.topWords = []
         self.wordCount = {}
 
-        # self.Timer.start()
-        #with open('TwoGramMarkov.pickle', 'r') as f:
-        #    self.twoGrams = cPickle.load(f)
-        # self.Timer.stop("Pickle Load")
+        self.Timer.start()
+        with open('TwoGramMarkov.pickle', 'r') as f:
+            self.twoGrams = cPickle.load(f)
+        self.Timer.stop("Pickle Load")
 
 
         # Generates two Grams from txt files
@@ -34,8 +34,8 @@ class GenMarkov():
         #self.GenRandom()
         #self.Timer.stop("Random Reivew Geneartion")
 
-        with open('TwoGramMarkov.pickle', 'w') as f:
-            cPickle.dump(self.twoGrams, f)
+        #with open('TwoGramMarkov.pickle', 'w') as f:
+        #    cPickle.dump(self.twoGrams, f)
 
         #print "Two Grams Size: " + str(len(self.twoGrams))
         #print "Sort Words Size: " + str(len(self.sortWords))
