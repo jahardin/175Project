@@ -39,15 +39,7 @@ class Example(Frame):
                 self.area2.delete(1.0, END)
                 self.area2.insert(1.0, self.markovGenerator.GenRandom())
             else:
-                showLoading()
-
-        def showLoading():
-            self.attemptedMarkov = True
-            popup = Toplevel()
-            text = Message(popup, text="The Markov Generator is still loading!\n\nText will show up when loaded!")
-            text.pack()
-            closePop = Button(popup, text="Okay!", command=popup.destroy)
-            closePop.pack()
+                self.showLoading()
 
         #MENU
         menubar = Menu(self.parent)
@@ -62,10 +54,10 @@ class Example(Frame):
         self.pack(fill=BOTH, expand=1)
 
         #ROWS/COLUMNS
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1, minsize=400)
         self.columnconfigure(1, pad=5)
         self.columnconfigure(2, pad=50)
-        self.columnconfigure(3, pad=5)
+        self.columnconfigure(3, weight=1, pad=5, minsize=400)
         self.columnconfigure(4, pad=5)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(2, pad=5)
@@ -120,14 +112,18 @@ class Example(Frame):
         print "score " + score[0]
         return text
 
-
-
-
+    def showLoading(self):
+        self.attemptedMarkov = True
+        popup = Toplevel()
+        text = Message(popup, text="The Markov Generator is still loading!\n\nText will show up when loaded!")
+        text.pack()
+        closePop = Button(popup, text="Okay!", command=popup.destroy)
+        closePop.pack()
 
 def main():
 
     root = Tk()
-    root.geometry("350x300+300+300")
+    root.geometry("1000x600+300+300")
     app = Example(root)
     root.mainloop()
 

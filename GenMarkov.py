@@ -22,11 +22,11 @@ class GenMarkov():
 
         # Generates two Grams from txt files
         #self.Timer.start()
-        self.GatherWords()
+        #self.GatherWords()
         #self.Timer.stop("Gather Words")
 
         #self.Timer.start()
-        self.TwoGramGen()
+        #self.TwoGramGen()
         #self.Timer.stop("TwoGram Generation")
 
 
@@ -34,18 +34,18 @@ class GenMarkov():
         #self.GenRandom()
         #self.Timer.stop("Random Reivew Geneartion")
 
-        # with open('TwoGramMarkov.pickle', 'w') as f:
-        #     cPickle.dump(self.twoGrams, f)
+        with open('TwoGramMarkov.pickle', 'w') as f:
+            cPickle.dump(self.twoGrams, f)
 
-        print "Two Grams Size: " + str(len(self.twoGrams))
-        print "Sort Words Size: " + str(len(self.sortWords))
-        print "Top Words Size: " + str(len(self.topWords))
+        #print "Two Grams Size: " + str(len(self.twoGrams))
+        #print "Sort Words Size: " + str(len(self.sortWords))
+        #print "Top Words Size: " + str(len(self.topWords))
 
     def GatherWords(self):
         start = "unsup/"
         end = "_0.txt"
         setWords = set()
-        for i in xrange(50000):
+        for i in xrange(35000):
             self.TokenizedWords(start+str(i)+end)
         for x in self.words:
             if x not in setWords:
