@@ -1,70 +1,86 @@
 import random
 import re
 import cPickle
+import nltk
+import time
 
 
 class GenMarkov():
     def __init__(self):
+        self.Timer = Timer()
         self.words = []
         self.twoGrams = {} # key = (word1, word2) & value = [possible following words]
         self.sortWords = []
         self.topWords = []
+        self.wordCount = {}
 
-        # with open('TwoGramMarkov.pickle', 'r') as f:
+        # self.Timer.start()
+        #with open('TwoGramMarkov.pickle', 'r') as f:
         #    self.twoGrams = cPickle.load(f)
+        # self.Timer.stop("Pickle Load")
+
 
         # Generates two Grams from txt files
+        #self.Timer.start()
         self.GatherWords()
+        #self.Timer.stop("Gather Words")
+
+        #self.Timer.start()
         self.TwoGramGen()
+        #self.Timer.stop("TwoGram Generation")
 
+
+        #self.Timer.start()
         #self.GenRandom()
+        #self.Timer.stop("Random Reivew Geneartion")
 
-        #with open('TwoGramMarkov.pickle', 'w') as f:
-        #	cPickle.dump(self.twoGrams, f)
+        # with open('TwoGramMarkov.pickle', 'w') as f:
+        #     cPickle.dump(self.twoGrams, f)
 
-        #print "Two Grams Size: " + str(len(self.twoGrams))
-        #print "Sort Words Size: " + str(len(self.sortWords))
-        #print "Top Words Size: " + str(len(self.topWords))
+        print "Two Grams Size: " + str(len(self.twoGrams))
+        print "Sort Words Size: " + str(len(self.sortWords))
+        print "Top Words Size: " + str(len(self.topWords))
 
     def GatherWords(self):
         start = "unsup/"
         end = "_0.txt"
         setWords = set()
-        wordCount = {}
         for i in xrange(50000):
             self.TokenizedWords(start+str(i)+end)
         for x in self.words:
             if x not in setWords:
                 setWords.add(x)
-                wordCount[x] = 1
+                self.wordCount[x] = 1
             else:
-                wordCount[x] += 1
-        self.sortWords = sorted(list(setWords), key=lambda w: wordCount[w], reverse=True)
+                self.wordCount[x] += 1
+        self.sortWords = sorted(list(setWords), key=lambda w: self.wordCount[w], reverse=True)
         self.topWords = [self.sortWords[i] for i in xrange(5000)]
+        self.topWordsList = list(self.topWords)
         self.topWords = set(self.topWords)
         self.words = ['' if x not in self.topWords else x for x in self.words]
 
     def TokenizedWords(self,file):
-        f = open(file, 'r')
-        s = f.read()
-        s = s.lower()
-        s = re.sub('<[^<]+?>', '', s)
-        sep = re.compile("[ ,.?()\"\;\:\n]+")
-        self.words += sep.split(s)
+        with open(file, 'r') as f:
+            s = f.read()
+            s = s.lower()
+            s = re.sub('<[^<]+?>', '', s)
+            sep = re.compile("[ ,.?()\"\;\:\n]+")
+            self.words += sep.split(s)
 
     def TwoGramGen(self):
         for i in xrange(len(self.words)-2):
             if self.words[i] == '' or self.words[i+1] == '' or self.words[i+2] == '':
                 continue
             key = (self.words[i], self.words[i+1])
-            if key in self.twoGrams:
-                val = self.words[i+2]
-                if val in self.twoGrams[key]:
-                    self.twoGrams[key][val] += 1
+            val = self.words[i+2]
+            keyVals = self.twoGrams.get(key)
+            if keyVals is not None and val in keyVals:
+                self.twoGrams[key][val] += 1
+            else:
+                if keyVals is None:
+                    self.twoGrams[key] = {val: 1}
                 else:
                     self.twoGrams[key][val] = 1
-            else:
-                self.twoGrams[key]={self.words[i+2]:1}
 
     def GenRandom(self, length=30):
         seed = self.GetNewSeed()
@@ -96,4 +112,16 @@ class GenMarkov():
             upto += choices[c]
         assert False, "Shouldn't get here"
 
-GenMarkov()
+
+class Timer:
+    def __init(self):
+        self.startTime = 0
+        self.endTime = 0
+    def start(self):
+        self.startTime = time.clock()
+    def stop(self, purpose):
+        self.endTime = time.clock()
+        print purpose + ": " + str(self.endTime-self.startTime)
+
+if __name__ == '__main__':
+    GenMarkov()
