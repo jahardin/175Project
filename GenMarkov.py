@@ -14,24 +14,24 @@ class GenMarkov():
         self.topWords = []
         self.wordCount = {}
 
-        self.Timer.start()
-        with open('TwoGramMarkov.pickle', 'r') as f:
-            self.twoGrams = cPickle.load(f)
-        self.Timer.stop("Pickle Load")
+        #self.Timer.start()
+        #with open('TwoGramMarkov.pickle', 'r') as f:
+        #    self.twoGrams = cPickle.load(f)
+        #self.Timer.stop("Pickle Load")
 
 
         # Generates two Grams from txt files
         #self.Timer.start()
-        #self.GatherWords()
+        self.GatherWords()
         #self.Timer.stop("Gather Words")
 
         #self.Timer.start()
-        #self.TwoGramGen()
+        self.TwoGramGen()
         #self.Timer.stop("TwoGram Generation")
 
 
         #self.Timer.start()
-        #self.GenRandom()
+        print self.GenRandom()
         #self.Timer.stop("Random Reivew Geneartion")
 
         #with open('TwoGramMarkov.pickle', 'w') as f:
@@ -41,11 +41,17 @@ class GenMarkov():
         #print "Sort Words Size: " + str(len(self.sortWords))
         #print "Top Words Size: " + str(len(self.topWords))
 
+        with open('wordsPOS.txt', 'w') as f:
+            self.fullWords = [w.decode('utf8') for w in self.fullWords]
+            posWords = nltk.pos_tag(self.fullWords)
+            for w in posWords:
+                f.write(str(w) + "\n")
+
     def GatherWords(self):
         start = "unsup/"
         end = "_0.txt"
         setWords = set()
-        for i in xrange(35000):
+        for i in xrange(2000):
             self.TokenizedWords(start+str(i)+end)
         for x in self.words:
             if x not in setWords:
@@ -57,6 +63,7 @@ class GenMarkov():
         self.topWords = [self.sortWords[i] for i in xrange(5000)]
         self.topWordsList = list(self.topWords)
         self.topWords = set(self.topWords)
+        self.fullWords = list(self.words)
         self.words = ['' if x not in self.topWords else x for x in self.words]
 
     def TokenizedWords(self,file):
