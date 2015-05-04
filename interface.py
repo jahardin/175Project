@@ -53,15 +53,16 @@ class Example(Frame):
         self.rowconfigure(2, pad=5)
         self.rowconfigure(3, pad=5)
         self.rowconfigure(4, pad=5)
+        self.rowconfigure(5, pad=5)
         
         #LEFT TEXTBOX
         self.area = Text(self)
-        self.area.grid(row=0, column=0, columnspan=1, rowspan=5, 
+        self.area.grid(row=0, column=0, columnspan=1, rowspan=6, 
             padx=5, sticky=E+W+S+N)
         
         #RIGHT TEXTBOX
         self.area2 = Text(self)
-        self.area2.grid(row=0, column=2, columnspan=1, rowspan=5, 
+        self.area2.grid(row=0, column=2, columnspan=1, rowspan=6, 
             padx=5, sticky=W+E+S+N)
         
         #SCORES/LABELS
@@ -75,6 +76,11 @@ class Example(Frame):
         self.scorebox2 = Text(self, width=2, height=1)
         self.scorebox2.grid(row=4, column=1, sticky=E)
         
+        lbl3 = Label(self, text="Sentiment")
+        lbl3.grid(row=5, column=1, sticky=W)
+        self.posneg = Text(self, width=3, height=1)
+        self.posneg.grid(row=5, column=1, sticky=E)
+        
         #BUTTONS
         abtn = Button(self, text="AnalyzeNB", command=self.analyzeNB)
         abtn.grid(row=0, column=1, sticky=N+W)
@@ -86,7 +92,6 @@ class Example(Frame):
         ggbtn.grid(row=2, column=1, sticky=N)
         trainnbbtn = Button(self, text="TrainClassifiers", command=self.trainNaiveBayes)
         trainnbbtn.grid(row=0, column=1, sticky=S)
-        
     #end initUI(self)
     
     ####################
@@ -120,6 +125,9 @@ class Example(Frame):
         f = open('nbclassifier.pickle')
         classifier = pickle.load(f)
         f.close
+        #insert pos/neg into txtbox
+        self.posneg.delete(1.0, END)
+        self.posneg.insert(INSERT, classifier.classify(feats))
         print classifier.classify(feats)
         
     def analyzeSVC(self):
@@ -130,6 +138,9 @@ class Example(Frame):
         f = open('svcclassifier.pickle')
         classifier = pickle.load(f)
         f.close
+        #insert pos/neg into txtbox
+        self.posneg.delete(1.0, END)
+        self.posneg.insert(INSERT, classifier.classify(feats))
         print classifier.classify(feats)
     ####################
     #END INTERFACE FUNCTIONS
