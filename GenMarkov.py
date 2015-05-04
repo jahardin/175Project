@@ -14,34 +14,35 @@ class GenMarkov():
         self.sortWords = []
         self.topWords = []
         self.wordCount = {}
+        self.numReviews = 500
 
         #self.Timer.start()
-        with open('TwoGramMarkov.pickle', 'r') as f:
-            self.twoGrams = cPickle.load(f)
+        #with open('TwoGramMarkov.pickle', 'r') as f:
+        #    self.twoGrams = cPickle.load(f)
         #self.Timer.stop("Pickle Load")
 
-        #with open('pos_tagger.pickle', 'r') as f:
-        #    self.pos_tagger = cPickle.load(f)
+        with open('pos_tagger.pickle', 'r') as f:
+            self.pos_tagger = cPickle.load(f)
 
         # Generates two Grams from txt files
         #self.Timer.start()
-        #self.GatherWords()
+        self.GatherWords()
         #self.Timer.stop("Gather Words")
 
         #print "WORDS GATHERED!"
 
         #self.Timer.start()
-        #self.TwoGramGen()
+        self.TwoGramGen()
         #self.Timer.stop("TwoGram Generation")
 
         #print "TWO GRAM GENERATED!"
 
         #self.Timer.start()
-        #print self.GenRandom()
+        print self.GenRandom()
         #self.Timer.stop("Random Reivew Geneartion")
 
-        #with open('TwoGramMarkov.pickle', 'w') as f:
-        #    cPickle.dump(self.twoGrams, f)
+        with open('TwoGramMarkov.pickle', 'w') as f:
+            cPickle.dump(self.twoGrams, f)
 
         #print "Two Grams Size: " + str(len(self.twoGrams))
         #print "Sort Words Size: " + str(len(self.sortWords))
@@ -51,14 +52,19 @@ class GenMarkov():
         start = "unsup/"
         end = "_0.txt"
         setWords = set()
-        for i in xrange(10):
+        for i in xrange(self.numReviews):
             print i
             self.TokenizedWords(start+str(i)+end)
 
     def TokenizedWords(self,file):
         with open(file, 'r') as f:
             s = f.read()
-            self.words += self.pos_tagger.tag(nltk.word_tokenize(s))
+            s = re.sub("<[^>]*>", '', s)
+            try:
+                words = self.pos_tagger.tag(nltk.word_tokenize(s))
+            except UnicodeDecodeError:
+                return
+            self.words += words
 
     def TwoGramGen(self):
         for i in xrange(len(self.words)-2):
