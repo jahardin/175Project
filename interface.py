@@ -1,4 +1,4 @@
-from Tkinter import Tk, Text, BOTH, Menu, W, N, E, S, INSERT, END
+from Tkinter import Tk, Text, BOTH, Menu, W, N, E, S, INSERT, END, Toplevel, Message
 import os, random
 from ttk import Frame, Button, Label, Style
 import tkFileDialog
@@ -10,6 +10,7 @@ from nltk.metrics import BigramAssocMeasures
 from nltk.probability import FreqDist, ConditionalFreqDist
 import pickle
 from sklearn.svm import LinearSVC
+import threading
 
 #filepaths
 DIR_ROOT = '/home/jacobus/Desktop/175Project'
@@ -27,11 +28,32 @@ class Example(Frame):
         self.parent = parent
         
         self.initUI()
+        self.markovGenerator = None
+        self.markovStarting = False
+        self.attemptedMarkov = False
+        threading.Thread(target=self.startMarkov).start()
+
+    def startMarkov(self):
+        self.markovStarting = True
+        from GenMarkov import GenMarkov
+        self.markovGenerator = GenMarkov()
+        self.markovStarting = False
+        if self.attemptedMarkov:
+            self.area2.delete(1.0, END)
+            self.area2.insert(1.0, self.markovGenerator.GenRandom())
+
     def initUI(self):
         
         #BUTTON CALLBACKS
         def giveRandom():
             print random.choice(os.listdir("C:\\test\neg"))
+
+        def genRandom():
+            if not self.markovStarting:
+                self.area2.delete(1.0, END)
+                self.area2.insert(1.0, self.markovGenerator.GenRandom())
+            else:
+                self.showLoading()
 
         #MENU
         menubar = Menu(self.parent)
@@ -80,7 +102,7 @@ class Example(Frame):
         abtn.grid(row=0, column=1, sticky=N+W)
         bbtn = Button(self, text="AnalyzeSVC", command=self.analyzeSVC)
         bbtn.grid(row=0, column=1, sticky=N+E)
-        gbtn = Button(self, text="Generate")
+        gbtn = Button(self, text="Generate", command=genRandom)
         gbtn.grid(row=1, column=1, sticky=N) 
         ggbtn = Button(self, text="Random", command=giveRandom)
         ggbtn.grid(row=2, column=1, sticky=N)
@@ -111,6 +133,14 @@ class Example(Frame):
         self.scorebox.insert(INSERT, score[0])
         #print "score " + score[0]
         return text
+
+    def showLoading(self):
+        self.attemptedMarkov = True
+        popup = Toplevel()
+        text = Message(popup, text="The Markov Generator is still loading!\n\nText will show up when loaded!")
+        text.pack()
+        closePop = Button(popup, text="Okay!", command=popup.destroy)
+        closePop.pack()
         
     def analyzeNB(self):
         inp = self.area.get("1.0",'end-1c')
