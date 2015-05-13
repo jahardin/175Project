@@ -50,8 +50,8 @@ class Example(Frame):
 
         def genRandom():
             if not self.markovStarting:
-                self.area2.delete(1.0, END)
-                self.area2.insert(1.0, self.markovGenerator.GenRandom())
+                self.area.delete(1.0, END)
+                self.area.insert(1.0, self.markovGenerator.GenRandom())
             else:
                 self.showLoading()
 
