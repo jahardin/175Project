@@ -125,9 +125,3 @@ class Model():
         global best_words; 
         best_words = set([w for w, s in best_vals])
         return best_words
-
-def main():
-	print "test"
-	model = Model()
-	model.trainNaiveBayes()	
-main()
