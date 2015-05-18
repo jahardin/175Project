@@ -12,6 +12,7 @@ import pickle
 from sklearn.svm import LinearSVC
 import threading
 import numpy
+import logicalRegression
 
 #filepaths
 DIR_ROOT = '/home/jacobus/Desktop/175Project'
@@ -177,7 +178,11 @@ class Example(Frame):
         
     def analyzeLogReg(self):
         inp = self.area.get("1.0",'end-1c')
-        self.calc_log_regression(inp)
+        #self.calc_log_regression(inp)
+        l = logicalRegression.Regression()
+        test = l.calc_log_regression(inp)
+        self.scorebox2.delete(1.0, END)
+        self.scorebox2.insert(INSERT, test)
         
     ####################
     #END INTERFACE FUNCTIONS
@@ -309,53 +314,6 @@ class Example(Frame):
     #END CLASSIFIER FUNCTIONS
     ##########################
     
-    ##########################
-    #LOGICAL REGRESSION
-    ##########################
-    def calc_log_regression(self, wordList):
-        print "Reading training set..."
-            
-        # get svm vocab words	
-        f = open('logRegVocab.txt', 'r')
-        word_features = f.read().splitlines()
-        f.close()
-
-        f2 = open('logRegScale.txt', 'r')
-        word_scale = [float(i) for i in f2.read().splitlines()]
-        f2.close()
-
-        fw = open('logRegWeights.txt', 'r')
-        weights = [float(i) for i in fw.read().splitlines()]
-        fw.close()
-        
-        print self.logReg(word_features, word_scale, weights, wordList)
-
-    def bow_features(self, word_features, word_scale, weights, document):
-        words = nltk.word_tokenize(document)
-        print len(words)
-        features = [0] * len(word_features)
-        features[0] = 1	
-        for word in words:
-            if word in word_features:
-                features[word_features.index(word)+1] += 1
-        for i in range(len(features)):
-            features[i] *= word_scale[i]/(len(words))
-
-        return features
-
-    def logReg(self, word_features, word_scale, weights, document):
-        bow = self.bow_features(word_features, word_scale, weights, document)
-        z = 0
-        for i in range(0,len(bow)):
-            z = z + bow[i] * weights[i]
-        retVal = 1 + 9 / (1 + numpy.exp(-z))
-        self.scorebox2.delete(1.0, END)
-        self.scorebox2.insert(INSERT, retVal)
-        #return 1 + 9 / (1 + numpy.exp(-z))
-        
-    ##########################
-    #END LOGICAL REGRESSION
-    ##########################
 
 def main():
     root = Tk()
