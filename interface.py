@@ -13,7 +13,8 @@ from sklearn.svm import LinearSVC
 import threading
 import numpy
 import logicalRegression
-import nbHand
+import naiveBayesModel
+import nbHandTest
 
 #filepaths
 DIR_ROOT = '/home/jacobus/Desktop/175Project'
@@ -47,9 +48,6 @@ class Example(Frame):
     def initUI(self):
         
         #BUTTON CALLBACKS
-        def giveRandom():
-            print random.choice(os.listdir("C:\\test\neg"))
-
         def genRandom():
             if not self.markovStarting:
                 self.area.delete(1.0, END)
@@ -74,10 +72,12 @@ class Example(Frame):
         self.columnconfigure(1, weight=1, pad=20)
         self.columnconfigure(2, weight=1)
         self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, pad=5)
         self.rowconfigure(2, pad=5)
         self.rowconfigure(3, pad=5)
         self.rowconfigure(4, pad=5)
         self.rowconfigure(5, pad=5)
+        self.rowconfigure(6, pad=5)
         
         #LEFT TEXTBOX
         self.area = Text(self)
@@ -91,35 +91,40 @@ class Example(Frame):
         
         #SCORES/LABELS
         lbl = Label(self, text="Actual Score")
-        lbl.grid(row=3, column=1, sticky=W, pady=4, padx=5)
+        lbl.grid(row=4, column=1, sticky=W, pady=4, padx=5)
         self.scorebox = Text(self, width=2, height=1)
-        self.scorebox.grid(row=3, column=1, sticky=E)
+        self.scorebox.grid(row=4, column=1, sticky=E)
         
         lbl2 = Label(self, text="Our Score")
-        lbl2.grid(row=4, column=1, sticky=W, pady=4, padx=5)
+        lbl2.grid(row=5, column=1, sticky=W, pady=4, padx=5)
         self.scorebox2 = Text(self, width=2, height=1)
-        self.scorebox2.grid(row=4, column=1, sticky=E)
+        self.scorebox2.grid(row=5, column=1, sticky=E)
         
         lbl3 = Label(self, text="Sentiment")
-        lbl3.grid(row=5, column=1, sticky=W)
+        lbl3.grid(row=6, column=1, sticky=W)
         self.posneg = Text(self, width=3, height=1)
-        self.posneg.grid(row=5, column=1, sticky=E)
+        self.posneg.grid(row=6, column=1, sticky=E)
         
         #BUTTONS
-        model = nbHand.Model()
+        nbModel = naiveBayesModel.Model()
         
-        abtn = Button(self, text="AnalyzeNB", command=self.analyzeNB)
+        abtn = Button(self, text="NB", command=self.analyzeNB)
         abtn.grid(row=0, column=1, sticky=N+W)
-        bbtn = Button(self, text="AnalyzeSVC", command=self.analyzeSVC)
+        
+        nltk_nb_btn = Button(self, text="NB_nltk", command=self.analyzeNB_nltk)
+        nltk_nb_btn.grid(row=1, column=1, sticky=N+W)
+        
+        bbtn = Button(self, text="SVC_nltk", command=self.analyzeSVC)
         bbtn.grid(row=0, column=1, sticky=N+E)
+        
         gbtn = Button(self, text="Generate", command=genRandom)
         gbtn.grid(row=1, column=1, sticky=N) 
-        ggbtn = Button(self, text="Random", command=giveRandom)
-        ggbtn.grid(row=2, column=1, sticky=N)
-        trainnbbtn = Button(self, text="TrainClassifiers", command=model.trainNaiveBayes)
-        trainnbbtn.grid(row=0, column=1, sticky=E+S)
+        
+        trainnbbtn = Button(self, text="TrainClassifiers", command=nbModel.trainNaiveBayes)
+        trainnbbtn.grid(row=0, column=1, sticky=N)
+        
         logReg = Button(self, text="LogReg", command=self.analyzeLogReg)
-        logReg.grid(row=0, column=1, sticky=W+S)
+        logReg.grid(row=4, column=1, sticky=W+S)
     #end initUI(self)
     
     ####################
@@ -166,6 +171,19 @@ class Example(Frame):
         self.posneg.insert(INSERT, classifier.classify(feats))
         print classifier.classify(feats)
         
+    def analyzeNB_nltk(self):
+        inp = self.area.get("1.0",'end-1c')
+        wordList = re.sub("[^\w]", " ",  inp).split()
+        feats = dict([(word, True) for word in wordList])
+        #load trained classifier
+        f = open('nbclassifier_nltk.pickle')
+        classifier = pickle.load(f)
+        f.close
+        #insert pos/neg into txtbox
+        self.posneg.delete(1.0, END)
+        self.posneg.insert(INSERT, classifier.classify(feats))
+        print classifier.classify(feats)
+        
     def analyzeSVC(self):
         inp = self.area.get("1.0",'end-1c')
         wordList = re.sub("[^\w]", " ",  inp).split()
@@ -186,14 +204,9 @@ class Example(Frame):
         test = l.calc_log_regression(inp)
         self.scorebox2.delete(1.0, END)
         self.scorebox2.insert(INSERT, test)
-        
-    ####################
-    #END INTERFACE FUNCTIONS
-    ####################
 
 def main():
     root = Tk()
-    #root.geometry("500x500+500+500")
     w = root.winfo_screenwidth()
     h = root.winfo_screenheight()
 
