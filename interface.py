@@ -13,16 +13,14 @@ from sklearn.svm import LinearSVC
 import threading
 import numpy
 import logicalRegression
-import naiveBayesModel
-import nbHandTest
-
-#filepaths
-DIR_ROOT = '/home/jacobus/Desktop/175Project'
-POS_FILE = os.path.join(DIR_ROOT, 'combinedPos')
-NEG_FILE = os.path.join(DIR_ROOT, 'combinedNeg')
+import main
 
 #globals
 best_words = set()
+
+#Main interface model to access all classifier functions for button callbacks
+mainInterface = main.mainInterface()
+
 class Example(Frame):
   
     def __init__(self, parent):
@@ -42,8 +40,8 @@ class Example(Frame):
         self.markovGenerator = GenMarkov()
         self.markovStarting = False
         if self.attemptedMarkov:
-            self.area2.delete(1.0, END)
-            self.area2.insert(1.0, self.markovGenerator.GenRandom())
+            self.area.delete(1.0, END)
+            self.area.insert(1.0, self.markovGenerator.GenRandom())
 
     def initUI(self):
         
@@ -78,6 +76,7 @@ class Example(Frame):
         self.rowconfigure(4, pad=5)
         self.rowconfigure(5, pad=5)
         self.rowconfigure(6, pad=5)
+        self.rowconfigure(7, pad=5)
         
         #LEFT TEXTBOX
         self.area = Text(self)
@@ -105,26 +104,38 @@ class Example(Frame):
         self.posneg = Text(self, width=3, height=1)
         self.posneg.grid(row=6, column=1, sticky=E)
         
+        ###########
         #BUTTONS
-        nbModel = naiveBayesModel.Model()
+        ###########
+        #row 0
+        trainNBBtn = Button(self, text="TrainNB", command=mainInterface.trainNB)
+        trainNBBtn.grid(row=0, column=1, sticky=N)
+        trainMultiBtn = Button(self, text="TrainMultiNB", command=mainInterface.trainMultiNB)
+        trainMultiBtn.grid(row=0, column=1, sticky=N+E)
+        trainDTBtn = Button(self, text="TrainDT", command=mainInterface.trainDT)
+        trainDTBtn.grid(row=0, column=1, sticky=N+W)
+        trainSVCBtn = Button(self, text="TrainSVC", command=mainInterface.trainSVC)
+        trainSVCBtn.grid(row=0, column=1, sticky=S)
         
-        abtn = Button(self, text="NB", command=self.analyzeNB)
-        abtn.grid(row=0, column=1, sticky=N+W)
-        
+        #row 1
+        nbBtn = Button(self, text="NB", command=self.analyzeNB)
+        nbBtn.grid(row=1, column=1, sticky=N+E)
+        gbtn = Button(self, text="Generate", command=genRandom)
+        gbtn.grid(row=1, column=1, sticky=N) 
         nltk_nb_btn = Button(self, text="NB_nltk", command=self.analyzeNB_nltk)
         nltk_nb_btn.grid(row=1, column=1, sticky=N+W)
         
-        bbtn = Button(self, text="SVC_nltk", command=self.analyzeSVC)
-        bbtn.grid(row=0, column=1, sticky=N+E)
+        #row 2
+        svcBtn = Button(self, text="SVC_nltk", command=self.analyzeSVC)
+        svcBtn.grid(row=2, column=1, sticky=N+E)
+        showStatsBtn = Button(self, text="Show Stats", command=self.showStats)
+        showStatsBtn.grid(row=2, column=1, sticky=N)
+        dtBtn = Button(self, text="DT_nltk", command = self.analyzeDecisionTree_nltk)
+        dtBtn.grid(row=2, column=1, sticky=N+W)
         
-        gbtn = Button(self, text="Generate", command=genRandom)
-        gbtn.grid(row=1, column=1, sticky=N) 
-        
-        trainnbbtn = Button(self, text="TrainClassifiers", command=nbModel.trainNaiveBayes)
-        trainnbbtn.grid(row=0, column=1, sticky=N)
-        
+        #row 3
         logReg = Button(self, text="LogReg", command=self.analyzeLogReg)
-        logReg.grid(row=4, column=1, sticky=W+S)
+        logReg.grid(row=3, column=1, sticky=N+W)
     #end initUI(self)
     
     ####################
@@ -147,7 +158,6 @@ class Example(Frame):
         score = filenamearr[1].split(".")
         self.scorebox.delete(1.0, END)
         self.scorebox.insert(INSERT, score[0])
-        #print "score " + score[0]
         return text
 
     def showLoading(self):
@@ -156,63 +166,39 @@ class Example(Frame):
         text = Message(popup, text="The Markov Generator is still loading!\n\nText will show up when loaded!")
         text.pack()
         closePop = Button(popup, text="Okay!", command=popup.destroy)
-        closePop.pack()
-        
+        closePop.pack()  
+         
+    ######  
+    ##Classifier Use Functions
+    ######
     def analyzeNB(self):
-        inp = self.area.get("1.0",'end-1c')
-        wordList = re.sub("[^\w]", " ",  inp).split()
-        feats = dict([(word, True) for word in wordList])
-        #load trained classifier
-        f = open('nbclassifier.pickle')
-        classifier = pickle.load(f)
-        f.close
-        #insert pos/neg into txtbox
-        self.posneg.delete(1.0, END)
-        self.posneg.insert(INSERT, classifier.classify(feats))
-        print classifier.classify(feats)
-        
+        mainInterface.analyzeNB(self.area, self.posneg)
+            
     def analyzeNB_nltk(self):
-        inp = self.area.get("1.0",'end-1c')
-        wordList = re.sub("[^\w]", " ",  inp).split()
-        feats = dict([(word, True) for word in wordList])
-        #load trained classifier
-        f = open('nbclassifier_nltk.pickle')
-        classifier = pickle.load(f)
-        f.close
-        #insert pos/neg into txtbox
-        self.posneg.delete(1.0, END)
-        self.posneg.insert(INSERT, classifier.classify(feats))
-        print classifier.classify(feats)
+		mainInterface.analyzeNB_nltk(self.area, self.posneg)
         
     def analyzeSVC(self):
-        inp = self.area.get("1.0",'end-1c')
-        wordList = re.sub("[^\w]", " ",  inp).split()
-        feats = dict([(word, True) for word in wordList])
-        #load trained classifier
-        f = open('svcclassifier.pickle')
-        classifier = pickle.load(f)
-        f.close
-        #insert pos/neg into txtbox
-        self.posneg.delete(1.0, END)
-        self.posneg.insert(INSERT, classifier.classify(feats))
-        print classifier.classify(feats)
+		mainInterface.analyzeSVC(self.area, self.posneg)
+        
+    def analyzeDecisionTree_nltk(self):
+		mainInterface.analyzeDecisionTree_nltk(self.area, self.posneg)
+        
+    def analyzeMultiNB_nltk(self):
+		mainInterface.analyzeMultiNB_nltk(self.area, self.posneg)
         
     def analyzeLogReg(self):
-        inp = self.area.get("1.0",'end-1c')
-        #self.calc_log_regression(inp)
-        l = logicalRegression.Regression()
-        test = l.calc_log_regression(inp)
-        self.scorebox2.delete(1.0, END)
-        self.scorebox2.insert(INSERT, test)
+		mainInterface.analyzeLogReg(self.area, self.scorebox2)
+		
+    def showStats(self):
+        mainInterface.showStats(self.area2)
+		
+    #End interface functions
 
-def main():
-    root = Tk()
+def createUI(root):
     w = root.winfo_screenwidth()
     h = root.winfo_screenheight()
-
     root.geometry("%dx%d+0+0" % (w, h))
-    app = Example(root)
-    root.mainloop()  
+    
     
 if __name__ == '__main__':
-    main()
+    createUI()

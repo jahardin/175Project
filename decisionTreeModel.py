@@ -3,62 +3,25 @@ import random
 import os
 import re, math, collections, itertools
 import nltk
-from nltk.classify import NaiveBayesClassifier
+from nltk.classify import DecisionTreeClassifier
 import pickle
-import nbHand
-import interface
 
-POS_FILE = 'combinedPos'
-NEG_FILE = 'combinedNeg'
+DIR_ROOT = '/home/jacobus/Desktop/175Git/175Project'
+POS_FILE = os.path.join(DIR_ROOT, 'combinedPos')
+NEG_FILE = os.path.join(DIR_ROOT, 'combinedNeg')
 
 class Model():
-    def trainNaiveBayes(self):
+    def trainDecisionTree(self):
+        print "in dt"
         numbers_to_test = [10, 100, 1000, 10000, 15000]
         wordScores = self.create_word_scores()
-        try:
-            os.remove("statsRecordNB.txt")
-        except OSError:
-            pass
+        print 'using all words as features'
+        self.evaluate_features(self.make_full_dict)
         for num in numbers_to_test:
+            print 'evaluating best %d word features' % (num)
             best_words = self.find_best_words(wordScores, num)
-            self.evaluate_features(self.best_word_features, num)
-        
-    def recordStats(self, referenceSets, referenceSets_nltk, predicted, predicted_nltk, testSets, testSets_nltk, trainFeatures, testFeatures, classifier, classifier_nltk, num):
-        if(os.path.isfile("statsRecordNB.txt")):
-			statsRecord = open("statsRecordNB.txt", "ab") #append
-        else:
-            statsRecord = open("statsRecordNB.txt", "wb") #write
-        
-        string = 'evaluating best %d features\n' % num
-        string += 'train on %d instances, test on %d instances(using handwritten algorithm)\n' % (len(trainFeatures), len(testFeatures))
-        accuracy = nltk.classify.util.accuracy(classifier, testFeatures)
-        string += 'accuracy: %f\n' % accuracy
-        posprec = nltk.metrics.precision(referenceSets['pos'], testSets['pos'])
-        string += 'pos precision: %f\n' % posprec
-        posrecall = nltk.metrics.precision(referenceSets['pos'], testSets['pos'])
-        string += 'pos recall: %f\n' % posrecall
-        negprec = nltk.metrics.precision(referenceSets['neg'], testSets['neg'])
-        string += 'neg precision: %f\n' % negprec
-        negrecall = nltk.metrics.recall(referenceSets['neg'], testSets['neg'])
-        string += 'neg recall: %f\n\n' % negrecall
-        statsRecord.write(string)
-        
-        string2 = 'evaluating best %d features\n' % num
-        string2 += 'train on %d instances, test on %d instances(using NLTK algorithm)\n' % (len(trainFeatures), len(testFeatures))
-        accuracy2 = nltk.classify.util.accuracy(classifier_nltk, testFeatures)
-        string2 += 'accuracy: %f\n' % accuracy
-        posprec2 = nltk.metrics.precision(referenceSets_nltk['pos'], testSets_nltk['pos'])
-        string2 += 'pos precision: %f\n' % posprec
-        posrecall2 = nltk.metrics.precision(referenceSets_nltk['pos'], testSets_nltk['pos'])
-        string2 += 'pos recall: %f\n' % posrecall
-        negprec2 = nltk.metrics.precision(referenceSets_nltk['neg'], testSets_nltk['neg'])
-        string2 += 'neg precision: %f\n' % negprec
-        negrecall2 = nltk.metrics.recall(referenceSets_nltk['neg'], testSets_nltk['neg'])
-        string2 += 'neg recall: %f\n\n' % negrecall
-        statsRecord.write(string2)
-        statsRecord.close()
-        print "finished NB features(%d)" % num
-        
+            #print best_words
+            self.evaluate_features(self.best_word_features)
             
     def best_word_features(self, words):
         return dict([(word, True) for word in words if word in best_words])
@@ -66,7 +29,7 @@ class Model():
     def make_full_dict(self, words):
         return dict([(word, True) for word in words])
     
-    def evaluate_features(self, feature_select, num):
+    def evaluate_features(self, feature_select):
         posFeatures=[]
         negFeatures=[]
         with open(POS_FILE, 'r') as posSentences:
@@ -93,35 +56,31 @@ class Model():
         #print trainFeatures
         
         #train an nltk classifier and non-nltk classifier
-        classifier_nltk = NaiveBayesClassifier.train(trainFeatures)
-        classifier = nbHand.nbClassifierHand.train(trainFeatures)
+        classifier_nltk = DecisionTreeClassifier.train(trainFeatures,depth_cutoff=1, support_cutoff=5)
         
         #save classifiers for later
-        f = open('nbclassifier.pickle', 'wb')
-        pickle.dump(classifier, f)
-        f.close()
-        
-        ff = open('nbclassifier_nltk.pickle', 'wb')
+        ff = open('dtClassifier.pickle', 'wb')
         pickle.dump(classifier_nltk, ff)
         ff.close()
         
         #make reference set and test sets
-        referenceSets = collections.defaultdict(set)
-        testSets = collections.defaultdict(set)
-        
         referenceSets_nltk = collections.defaultdict(set)
         testSets_nltk = collections.defaultdict(set)
         
         #put correctly labeled sentences in reference, predictively labeled in test sets
         for i, (features, label) in enumerate(testFeatures):
-            referenceSets[label].add(i)
             referenceSets_nltk[label].add(i)
-            predicted = classifier.classify(features)
             predicted_nltk = classifier_nltk.classify(features)
-            testSets[predicted].add(i)
             testSets_nltk[predicted_nltk].add(i)
-            
-        self.recordStats(referenceSets, referenceSets_nltk, predicted, predicted_nltk, testSets, testSets_nltk, trainFeatures, testFeatures, classifier, classifier_nltk, num)
+        
+        #prints metrics to show how well the feature selection did nltk
+        print 'train on %d instances, test on %d instances(using handwritten algorithm)' % (len(trainFeatures), len(testFeatures))
+        print ' accuracy:', nltk.classify.util.accuracy(classifier_nltk, testFeatures)
+        print 'pos precision:', nltk.metrics.precision(referenceSets_nltk['pos'], testSets_nltk['pos'])
+        print 'pos recall:', nltk.metrics.recall(referenceSets_nltk['pos'], testSets_nltk['pos'])
+        print 'neg precision:', nltk.metrics.precision(referenceSets_nltk['neg'], testSets_nltk['neg'])
+        print 'neg recall:', nltk.metrics.recall(referenceSets_nltk['neg'], testSets_nltk['neg'])
+        classifier.show_most_informative_features(10)
     #end evaluate_features(feature_select)
     
     def create_word_scores(self):

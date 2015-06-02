@@ -3,31 +3,31 @@ import random
 import os
 import re, math, collections, itertools
 import nltk
-from nltk.classify import NaiveBayesClassifier
 import pickle
-import nbHand
 import interface
+from sklearn import svm
 
 POS_FILE = 'combinedPos'
 NEG_FILE = 'combinedNeg'
 
 class Model():
-    def trainNaiveBayes(self):
+    def trainSVC(self):
+        print "in train svc model"
         numbers_to_test = [10, 100, 1000, 10000, 15000]
         wordScores = self.create_word_scores()
         try:
-            os.remove("statsRecordNB.txt")
+            os.remove("statsRecordSVC.txt")
         except OSError:
             pass
         for num in numbers_to_test:
             best_words = self.find_best_words(wordScores, num)
             self.evaluate_features(self.best_word_features, num)
         
-    def recordStats(self, referenceSets, referenceSets_nltk, predicted, predicted_nltk, testSets, testSets_nltk, trainFeatures, testFeatures, classifier, classifier_nltk, num):
-        if(os.path.isfile("statsRecordNB.txt")):
-			statsRecord = open("statsRecordNB.txt", "ab") #append
+    def recordStats(self, referenceSets, predicted, testSets, trainFeatures, testFeatures, classifier, num):
+        if(os.path.isfile("statsRecordSVC.txt")):
+			statsRecord = open("statsRecordSVC.txt", "ab") #append
         else:
-            statsRecord = open("statsRecordNB.txt", "wb") #write
+            statsRecord = open("statsRecordSVC.txt", "wb") #write
         
         string = 'evaluating best %d features\n' % num
         string += 'train on %d instances, test on %d instances(using handwritten algorithm)\n' % (len(trainFeatures), len(testFeatures))
@@ -93,35 +93,25 @@ class Model():
         #print trainFeatures
         
         #train an nltk classifier and non-nltk classifier
-        classifier_nltk = NaiveBayesClassifier.train(trainFeatures)
-        classifier = nbHand.nbClassifierHand.train(trainFeatures)
+        classifier = LinearSVC
+        classifier.predict
         
         #save classifiers for later
-        f = open('nbclassifier.pickle', 'wb')
+        f = open('svcclassifier.pickle', 'wb')
         pickle.dump(classifier, f)
         f.close()
-        
-        ff = open('nbclassifier_nltk.pickle', 'wb')
-        pickle.dump(classifier_nltk, ff)
-        ff.close()
         
         #make reference set and test sets
         referenceSets = collections.defaultdict(set)
         testSets = collections.defaultdict(set)
         
-        referenceSets_nltk = collections.defaultdict(set)
-        testSets_nltk = collections.defaultdict(set)
-        
         #put correctly labeled sentences in reference, predictively labeled in test sets
         for i, (features, label) in enumerate(testFeatures):
             referenceSets[label].add(i)
-            referenceSets_nltk[label].add(i)
             predicted = classifier.classify(features)
-            predicted_nltk = classifier_nltk.classify(features)
             testSets[predicted].add(i)
-            testSets_nltk[predicted_nltk].add(i)
             
-        self.recordStats(referenceSets, referenceSets_nltk, predicted, predicted_nltk, testSets, testSets_nltk, trainFeatures, testFeatures, classifier, classifier_nltk, num)
+        self.recordStats(referenceSets, predicted, testSets, trainFeatures, testFeatures, classifier, num)
     #end evaluate_features(feature_select)
     
     def create_word_scores(self):
