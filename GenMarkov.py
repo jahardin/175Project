@@ -13,25 +13,26 @@ class GenMarkov():
         self.sortWords = []
         self.topWords = []
         self.wordCount = {}
+        self.sentEnd = ['.', '!', '?']
 
         #self.Timer.start()
-        #with open('TwoGramMarkov.pickle', 'r') as f:
-        #    self.twoGrams = cPickle.load(f)
+        with open('TwoGramMarkov.pickle', 'r') as f:
+            self.twoGrams = cPickle.load(f)
         #self.Timer.stop("Pickle Load")
 
 
         # Generates two Grams from txt files
         #self.Timer.start()
-        self.GatherWords()
+        #self.GatherWords()
         #self.Timer.stop("Gather Words")
 
         #self.Timer.start()
-        self.TwoGramGen()
+        #self.TwoGramGen()
         #self.Timer.stop("TwoGram Generation")
 
 
         #self.Timer.start()
-        print self.GenRandom()
+        #print self.GenRandom()
         #self.Timer.stop("Random Reivew Geneartion")
 
         #with open('TwoGramMarkov.pickle', 'w') as f:
@@ -41,17 +42,11 @@ class GenMarkov():
         #print "Sort Words Size: " + str(len(self.sortWords))
         #print "Top Words Size: " + str(len(self.topWords))
 
-        with open('wordsPOS.txt', 'w') as f:
-            self.fullWords = [w.decode('utf8') for w in self.fullWords]
-            posWords = nltk.pos_tag(self.fullWords)
-            for w in posWords:
-                f.write(str(w) + "\n")
-
     def GatherWords(self):
-        start = "unsup/"
+        start = "Markov/unsup/"
         end = "_0.txt"
         setWords = set()
-        for i in xrange(2000):
+        for i in xrange(50000):
             self.TokenizedWords(start+str(i)+end)
         for x in self.words:
             if x not in setWords:
@@ -71,8 +66,8 @@ class GenMarkov():
             s = f.read()
             s = s.lower()
             s = re.sub('<[^<]+?>', '', s)
-            sep = re.compile("[ ,.?()\"\;\:\n]+")
-            self.words += sep.split(s)
+            s = s.decode('utf-8').lower()
+            self.words += nltk.word_tokenize(s)
 
     def TwoGramGen(self):
         for i in xrange(len(self.words)-2):
@@ -89,17 +84,20 @@ class GenMarkov():
                 else:
                     self.twoGrams[key][val] = 1
 
-    def GenRandom(self, length=30):
+    def GenRandom(self, length=3):
         seed = self.GetNewSeed()
 
-        ran = [seed[0], seed[1]]
-        for i in xrange(length):
+        ran = [seed[1]]
+        i = 0
+        while i < length:
             tmp = seed[1]
             if (seed[0], seed[1]) not in self.twoGrams:
                 seed = self.GetNewSeed()
             seed[1] = self.weighted_choice(self.twoGrams[(seed[0], seed[1])])
             seed[0] = tmp
             ran.append(seed[1])
+            if seed[1] in self.sentEnd:
+                i += 1
         return " ".join(ran)
 
     def GetNewSeed(self):
@@ -107,6 +105,11 @@ class GenMarkov():
         w1 = seedElem[0]
         w2 = seedElem[1]
         seed = [w1, w2]
+        while w1 not in self.sentEnd:
+            seedElem = random.choice(self.twoGrams.keys())
+            w1 = seedElem[0]
+            w2 = seedElem[1]
+            seed = [w1, w2]
         return seed
 
     def weighted_choice(self, choices):
