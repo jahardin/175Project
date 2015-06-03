@@ -1,0 +1,80 @@
+evaluating best 10 features
+train on 18750 instances, test on 6250 instances(using handwritten algorithm)
+accuracy: 0.625440
+pos precision: 0.740786
+pos recall: 0.740786
+neg precision: 0.584812
+neg recall: 0.864960
+
+evaluating best 10 features
+train on 18750 instances, test on 6250 instances(using NLTK algorithm)
+accuracy: 0.625440
+pos precision: 0.740786
+pos recall: 0.740786
+neg precision: 0.584812
+neg recall: 0.864960
+
+evaluating best 100 features
+train on 18750 instances, test on 6250 instances(using handwritten algorithm)
+accuracy: 0.702080
+pos precision: 0.923541
+pos recall: 0.923541
+neg precision: 0.632696
+neg recall: 0.963520
+
+evaluating best 100 features
+train on 18750 instances, test on 6250 instances(using NLTK algorithm)
+accuracy: 0.702080
+pos precision: 0.923541
+pos recall: 0.923541
+neg precision: 0.632696
+neg recall: 0.963520
+
+evaluating best 1000 features
+train on 18750 instances, test on 6250 instances(using handwritten algorithm)
+accuracy: 0.794080
+pos precision: 0.940556
+pos recall: 0.940556
+neg precision: 0.720701
+neg recall: 0.960320
+
+evaluating best 1000 features
+train on 18750 instances, test on 6250 instances(using NLTK algorithm)
+accuracy: 0.794080
+pos precision: 0.940556
+pos recall: 0.940556
+neg precision: 0.720701
+neg recall: 0.960320
+
+evaluating best 10000 features
+train on 18750 instances, test on 6250 instances(using handwritten algorithm)
+accuracy: 0.845280
+pos precision: 0.917247
+pos recall: 0.917247
+neg precision: 0.794487
+neg recall: 0.931520
+
+evaluating best 10000 features
+train on 18750 instances, test on 6250 instances(using NLTK algorithm)
+accuracy: 0.845280
+pos precision: 0.917247
+pos recall: 0.917247
+neg precision: 0.794487
+neg recall: 0.931520
+
+evaluating best 15000 features
+train on 18750 instances, test on 6250 instances(using handwritten algorithm)
+accuracy: 0.852480
+pos precision: 0.918344
+pos recall: 0.918344
+neg precision: 0.804534
+neg recall: 0.931200
+
+evaluating best 15000 features
+train on 18750 instances, test on 6250 instances(using NLTK algorithm)
+accuracy: 0.852480
+pos precision: 0.918344
+pos recall: 0.918344
+neg precision: 0.804534
+neg recall: 0.931200
+

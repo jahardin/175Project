@@ -1,8 +1,8 @@
 ccopy_reg
 _reconstructor
 p0
-(cnltk.classify.naivebayes
-NaiveBayesClassifier
+(cnbHand
+nbClassifierHand
 p1
 c__builtin__
 object
