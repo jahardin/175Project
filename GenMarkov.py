@@ -43,7 +43,7 @@ class GenMarkov():
         #print "Top Words Size: " + str(len(self.topWords))
 
     def GatherWords(self):
-        start = "Markov/unsup/"
+        start = "unsup/"
         end = "_0.txt"
         setWords = set()
         for i in xrange(50000):
@@ -54,12 +54,15 @@ class GenMarkov():
                 self.wordCount[x] = 1
             else:
                 self.wordCount[x] += 1
+        with open('logRegVocab.txt') as f:
+            vocab = f.read().decode('utf-8').lower()
+            self.vocab = vocab.split('\r\n')
         self.sortWords = sorted(list(setWords), key=lambda w: self.wordCount[w], reverse=True)
         self.topWords = [self.sortWords[i] for i in xrange(5000)]
         self.topWordsList = list(self.topWords)
         self.topWords = set(self.topWords)
         self.fullWords = list(self.words)
-        self.words = ['' if x not in self.topWords else x for x in self.words]
+        self.words = ['' if ((x not in self.topWords) and (x not in self.vocab)) else x for x in self.words]
 
     def TokenizedWords(self,file):
         with open(file, 'r') as f:
@@ -67,7 +70,11 @@ class GenMarkov():
             s = s.lower()
             s = re.sub('<[^<]+?>', '', s)
             s = s.decode('utf-8').lower()
-            self.words += nltk.word_tokenize(s)
+            s = nltk.word_tokenize(s)
+            removePunc = re.compile('[\(\'"`\):;]')
+            s = [w for w in s if not removePunc.search(w)]
+            self.words += s
+
 
     def TwoGramGen(self):
         for i in xrange(len(self.words)-2):
@@ -89,6 +96,7 @@ class GenMarkov():
 
         ran = [seed[1]]
         i = 0
+        w = 1
         while i < length:
             tmp = seed[1]
             if (seed[0], seed[1]) not in self.twoGrams:
@@ -96,8 +104,14 @@ class GenMarkov():
             seed[1] = self.weighted_choice(self.twoGrams[(seed[0], seed[1])])
             seed[0] = tmp
             ran.append(seed[1])
+            w += 1
             if seed[1] in self.sentEnd:
                 i += 1
+                w = 0
+            if w > 20:
+                i += 1
+                w = 0
+                ran.append('.')
         return " ".join(ran)
 
     def GetNewSeed(self):
@@ -122,6 +136,21 @@ class GenMarkov():
             upto += choices[c]
         assert False, "Shouldn't get here"
 
+    def findMostLikely(self, w1, w2):
+        seed = [w1.lower(), w2.lower()]
+        ran = [seed[0], seed[1]]
+        i = 0
+        while i < 1:
+            tmp = seed[1]
+            if(seed[0],seed[1]) not in self.twoGrams:
+                break
+            seed[1] = max(self.twoGrams[(seed[0], seed[1])].items(), key=lambda i: i[1])[0]
+            seed[0] = tmp
+            ran.append(seed[1])
+            if seed[1] in self.sentEnd:
+                i += 1
+        return " ".join(ran)
+
 
 class Timer:
     def __init(self):
@@ -134,4 +163,5 @@ class Timer:
         print purpose + ": " + str(self.endTime-self.startTime)
 
 if __name__ == '__main__':
-    GenMarkov()
+    g = GenMarkov()
+    print g.GenRandom()
