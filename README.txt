@@ -50,7 +50,7 @@ test.py - current test visualation comparasion. handwritten
 
 FOLDERS
 -----------
-test - contains 
+test/train - refer to the final report for information on  downloading the training and test data sets. They are too large to submit with the project.
 
 
 .pickle files
