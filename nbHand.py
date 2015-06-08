@@ -3,6 +3,12 @@ from collections import defaultdict
 from nltk.probability import FreqDist, DictionaryProbDist, ELEProbDist, sum_logs
 from nltk.classify.api import ClassifierI
 
+#####################################
+##CURRENTLY BASED OFF OF THE NLTK LIBRARY CLASSIFIER
+##WILL BE REWRITTEN BASED OFF OF naivebayes.m BEFORE FINAL TURN IN
+#####################################
+
+
 class nbClassifierHand(ClassifierI):
 
     def __init__(self, label_probdist, feature_probdist):
