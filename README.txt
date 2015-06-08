@@ -67,6 +67,7 @@ Tkinter
 Pandas
 NumPy
 MatplotLib
+Liblinear
 
 
 
@@ -89,6 +90,7 @@ Scikit-learn - http://scikit-learn.org/stable/
 nltk - http://www.nltk.org/
 tkinter - https://wiki.python.org/moin/TkInter
 matplotlib - http://matplotlib.org/
+liblinear - http://www.csie.ntu.edu.tw/~cjlin/liblinear/
 
 ============================================================
 STILL TO DO
