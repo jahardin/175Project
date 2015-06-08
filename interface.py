@@ -1,6 +1,6 @@
 from Tkinter import Tk, Text, BOTH, Menu, W, N, E, S, INSERT, END, Toplevel, Message
 import os, random
-from ttk import Frame, Button, Label, Style
+from ttk import Frame, Button, Label, Style, Entry
 import tkFileDialog
 from tkFileDialog import askopenfilename
 import re, math, collections, itertools, os
@@ -53,6 +53,12 @@ class Example(Frame):
             else:
                 self.showLoading()
 
+        def genSeed():
+            if not self.markovStarting:
+                self.area.delete(1.0, END)
+                seed = seedEntry.get()
+                self.area.insert(1.0, self.markovGenerator.GenSeed(seed))
+
         #MENU
         menubar = Menu(self.parent)
         self.parent.config(menu=menubar)
@@ -103,7 +109,12 @@ class Example(Frame):
         lbl3.grid(row=6, column=1, sticky=W)
         self.posneg = Text(self, width=3, height=1)
         self.posneg.grid(row=6, column=1, sticky=E)
-        
+
+        seedEntry = Entry(self)
+        seedEntry.grid(row=7, column=1, sticky=W, pady=4, padx=5)
+        seedBtn = Button(self, text='Gen w/ Seed', command=genSeed)
+        seedBtn.grid(row=7, column=1, sticky=E)
+
         ###########
         #BUTTONS
         ###########

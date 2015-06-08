@@ -91,10 +91,13 @@ class GenMarkov():
                 else:
                     self.twoGrams[key][val] = 1
 
-    def GenRandom(self, length=3):
-        seed = self.GetNewSeed()
-
-        ran = [seed[1]]
+    def GenRandom(self, seed = None, length=3):
+        if seed == None:
+            seed = self.GetNewSeed()
+        if seed[0] == '.':
+            ran = [seed[1]]
+        else:
+            ran = [seed[0], seed[1]]
         i = 0
         w = 1
         while i < length:
@@ -151,6 +154,9 @@ class GenMarkov():
                 i += 1
         return " ".join(ran)
 
+    def GenSeed(self, seedTxt):
+        thisSeed = nltk.word_tokenize(seedTxt.decode('utf-8').lower())
+        return self.GenRandom(seed=thisSeed)
 
 class Timer:
     def __init(self):
