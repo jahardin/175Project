@@ -119,7 +119,7 @@ class nbClassifierHand(ClassifierI):
 
 def demo():
     from nltk.classify.util import names_demo
-    classifier = names_demo(NaiveBayesClassifier.train)
+    classifier = names_demo(nbClassifierHand.train)
     classifier.show_most_informative_features()
 
 if __name__ == '__main__':

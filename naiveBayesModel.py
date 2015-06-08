@@ -120,7 +120,8 @@ class Model():
             predicted_nltk = classifier_nltk.classify(features)
             testSets[predicted].add(i)
             testSets_nltk[predicted_nltk].add(i)
-            
+        
+        classifier.show_most_informative_features(100)    
         self.recordStats(referenceSets, referenceSets_nltk, predicted, predicted_nltk, testSets, testSets_nltk, trainFeatures, testFeatures, classifier, classifier_nltk, num)
     #end evaluate_features(feature_select)
     
