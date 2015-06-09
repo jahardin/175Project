@@ -4,10 +4,9 @@ import pickle
 from ttk import Frame
 import interface
 import naiveBayesModel
-import decisionTreeModel
-import multinomialNBModel
 import logicalRegression
-import svcModel
+import nbHand
+import os.path
 
 class mainInterface():
     def main():
@@ -20,8 +19,8 @@ class mainInterface():
     ##Classifier Trainers(button callbacks)
     ##############################
     def trainNB(self):
-        nbModel = naiveBayesModel.Model()
-        nbModel.trainNaiveBayes()
+        nbModel = nbHand.Model()
+        nbModel.train()
         
     def trainDT(self):
         dtModel = decisionTreeModel.Model()
@@ -31,10 +30,11 @@ class mainInterface():
         multiNBModel = multinomialNBModel.Model()
         multiNBModel.trainMultinomialNB()
         
+        '''
     def trainSVC(self):
 		vectorModel = svcModel.Model()
 		vectorModel.trainSVC()
-        
+        '''
     
     ##############################
     ##Classifier Use Functions(button callbacks)
@@ -70,7 +70,7 @@ class mainInterface():
         wordList = re.sub("[^\w]", " ",  inp).split()
         feats = dict([(word, True) for word in wordList])
         #load trained classifier
-        f = open('svcclassifier.pickle')
+        f = open('svcclassifier_backup.pickle')
         classifier = pickle.load(f)
         f.close
         #insert pos/neg into txtbox
@@ -78,31 +78,6 @@ class mainInterface():
         posneg.insert(INSERT, classifier.classify(feats))
         print classifier.classify(feats)
         
-    def analyzeDecisionTree_nltk(self, area, posneg):
-        inp = area.get("1.0",'end-1c')
-        wordList = re.sub("[^\w]", " ",  inp).split()
-        feats = dict([(word, True) for word in wordList])
-        #load trained classifier
-        f = open('dtClassifier.pickle')
-        classifier = pickle.load(f)
-        f.close
-        #insert pos/neg into txtbox
-        posneg.delete(1.0, END)
-        posneg.insert(INSERT, classifier.classify(feats))
-        print classifier.classify(feats)
-        
-    def analyzeMultiNB_nltk(self, area, posneg):
-        inp = area.get("1.0",'end-1c')
-        wordList = re.sub("[^\w]", " ",  inp).split()
-        feats = dict([(word, True) for word in wordList])
-        #load trained classifier
-        f = open('multiNB.pickle')
-        classifier = pickle.load(f)
-        f.close
-        #insert pos/neg into txtbox
-        posneg.delete(1.0, END)
-        posneg.insert(INSERT, classifier.classify(feats))
-        print classifier.classify(feats)
         
     def analyzeLogReg(self, area, scorebox2):
         inp = area.get("1.0",'end-1c')
@@ -113,12 +88,23 @@ class mainInterface():
         scorebox2.insert(INSERT, test)
     
     def showStats(self, area2):
-        statsRecordNB = open('statsRecordNB.txt', 'r')
-        statsNB = statsRecordNB.read()
-        area2.insert(INSERT, "NAIVE BAYES STATISTICS\n")
-        area2.tag_add("Blue", "1.0", "1.22")
-        area2.tag_config("Blue", background="black", foreground="blue")
-        area2.insert(INSERT, statsNB)
+		if(os.path.exists('statsRecordNB.txt')):
+			statsRecordNB = open('statsRecordNB.txt', 'r')
+			statsNB = statsRecordNB.read()
+			area2.insert(INSERT, "NAIVE BAYES STATISTICS NLTK\n")
+			area2.insert(INSERT, statsNB)
+			statsRecordNBHand = open('statsRecordNBHand.txt', 'r')
+		if(os.path.exists('statsRecordNBHand.txt')):
+			statsRecordNB = open('statsRecordNBHand.txt', 'r')
+			statsNB = statsRecordNB.read()
+			area2.insert(END, "\n\nNAIVE BAYES STATISTICS HAND CLASSIFIER\n")
+			area2.insert(END, statsNB)
+			statsRecordNBHand = open('statsRecordNBHand.txt', 'r')
+		if(os.path.exists('statsRecordSVC.txt')):
+			statsRecordNB = open('statsRecordSVC.txt', 'r')
+			statsNB = statsRecordNB.read()
+			area2.insert(END, statsNB)
+			statsRecordNBHand = open('statsRecordSVC.txt', 'r')
       
     ##############################
     ##End Classifier Use Functions

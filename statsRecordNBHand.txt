@@ -1,0 +1,2 @@
+train on 18750 instances, test on 6250 instances
+accuracy 0.420680

@@ -1,3 +1,4 @@
+Naive Bayes NLTK
 evaluating best 15000 word features
 train on 18750 instances, test on 6250 instances
 accuracy: 0.85248

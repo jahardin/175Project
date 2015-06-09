@@ -86,12 +86,12 @@ class Example(Frame):
         
         #LEFT TEXTBOX
         self.area = Text(self)
-        self.area.grid(row=0, column=0, columnspan=1, rowspan=6, 
+        self.area.grid(row=0, column=0, columnspan=1, rowspan=8, 
             padx=5, sticky=E+W+S+N)
         
         #RIGHT TEXTBOX
         self.area2 = Text(self)
-        self.area2.grid(row=0, column=2, columnspan=1, rowspan=6, 
+        self.area2.grid(row=0, column=2, columnspan=1, rowspan=8, 
             padx=5, sticky=W+E+S+N)
         
         #SCORES/LABELS
@@ -120,11 +120,9 @@ class Example(Frame):
         ###########
         #row 0
         trainNBBtn = Button(self, text="TrainNB", command=mainInterface.trainNB)
-        trainNBBtn.grid(row=0, column=1, sticky=N+E)
-        trainSVCBtn = Button(self, text="TrainSVC", command=mainInterface.trainSVC)
-        trainSVCBtn.grid(row=0, column=1, sticky=N+W)
-        showStatsBtn = Button(self, text="Show Stats", command=self.showStats)
-        showStatsBtn.grid(row=0, column=1, sticky=N)
+        trainNBBtn.grid(row=0, column=1, sticky=N+W)
+        #trainSVCBtn = Button(self, text="TrainSVC", command=mainInterface.trainSVC)
+        #trainSVCBtn.grid(row=0, column=1, sticky=N+E)
         
         #row 1
         nbBtn = Button(self, text="NB", command=self.analyzeNB)
@@ -137,13 +135,10 @@ class Example(Frame):
         #row 2
         svcBtn = Button(self, text="SVC_nltk", command=self.analyzeSVC)
         svcBtn.grid(row=2, column=1, sticky=N+E)
-        
-        dtBtn = Button(self, text="DT_nltk", command = self.analyzeDecisionTree_nltk)
-        dtBtn.grid(row=2, column=1, sticky=N+W)
-        
-        #row 3
+        showStatsBtn = Button(self, text="Show Stats", command=self.showStats)
+        showStatsBtn.grid(row=2, column=1, sticky=N)
         logReg = Button(self, text="LogReg", command=self.analyzeLogReg)
-        logReg.grid(row=3, column=1, sticky=N+W)
+        logReg.grid(row=2, column=1, sticky=N+W)
     #end initUI(self)
     
     ####################
@@ -183,17 +178,11 @@ class Example(Frame):
         mainInterface.analyzeNB(self.area, self.posneg)
             
     def analyzeNB_nltk(self):
-		mainInterface.analyzeNB_nltk(self.area, self.posneg)
+        mainInterface.analyzeNB_nltk(self.area, self.posneg)
         
     def analyzeSVC(self):
 		mainInterface.analyzeSVC(self.area, self.posneg)
-        
-    def analyzeDecisionTree_nltk(self):
-		mainInterface.analyzeDecisionTree_nltk(self.area, self.posneg)
-        
-    def analyzeMultiNB_nltk(self):
-		mainInterface.analyzeMultiNB_nltk(self.area, self.posneg)
-        
+
     def analyzeLogReg(self):
 		mainInterface.analyzeLogReg(self.area, self.scorebox2)
 		
