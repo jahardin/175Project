@@ -13,7 +13,8 @@ NEG_FILE = os.path.join(DIR_ROOT, 'combinedNeg')
 class Model():
     def trainDecisionTree(self):
         print "in dt"
-        numbers_to_test = [10, 100, 1000, 10000, 15000]
+        #numbers_to_test = [10, 100, 1000, 10000, 15000]
+        numbers_to_test = [10]
         wordScores = self.create_word_scores()
         print 'using all words as features'
         self.evaluate_features(self.make_full_dict)
@@ -30,6 +31,7 @@ class Model():
         return dict([(word, True) for word in words])
     
     def evaluate_features(self, feature_select):
+        print "in dt eval features"
         posFeatures=[]
         negFeatures=[]
         with open(POS_FILE, 'r') as posSentences:
@@ -80,7 +82,7 @@ class Model():
         print 'pos recall:', nltk.metrics.recall(referenceSets_nltk['pos'], testSets_nltk['pos'])
         print 'neg precision:', nltk.metrics.precision(referenceSets_nltk['neg'], testSets_nltk['neg'])
         print 'neg recall:', nltk.metrics.recall(referenceSets_nltk['neg'], testSets_nltk['neg'])
-        classifier.show_most_informative_features(10)
+        #classifier.show_most_informative_features(10)
     #end evaluate_features(feature_select)
     
     def create_word_scores(self):

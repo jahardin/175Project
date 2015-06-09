@@ -83,7 +83,7 @@ class mainInterface():
         wordList = re.sub("[^\w]", " ",  inp).split()
         feats = dict([(word, True) for word in wordList])
         #load trained classifier
-        f = open('decisionTreeClassifier_nltk.pickle')
+        f = open('dtClassifier.pickle')
         classifier = pickle.load(f)
         f.close
         #insert pos/neg into txtbox

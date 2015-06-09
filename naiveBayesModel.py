@@ -3,32 +3,59 @@ import random
 import os
 import re, math, collections, itertools
 import nltk
-from nltk.classify import NaiveBayesClassifier
 import pickle
 import nbHand
 import interface
+from scipy.io import loadmat
+from scipy.sparse import *
+import numpy
 
 POS_FILE = 'combinedPos'
 NEG_FILE = 'combinedNeg'
 
+
+
 class Model():
     def trainNaiveBayes(self):
         numbers_to_test = [10, 100, 1000, 10000, 15000]
-        wordScores = self.create_word_scores()
+        #numbers_to_test = [10]
         try:
             os.remove("statsRecordNB.txt")
         except OSError:
             pass
-        for num in numbers_to_test:
-            best_words = self.find_best_words(wordScores, num)
-            self.evaluate_features(self.best_word_features, num)
         
-    def recordStats(self, referenceSets, referenceSets_nltk, predicted, predicted_nltk, testSets, testSets_nltk, trainFeatures, testFeatures, classifier, classifier_nltk, num):
+        
+    def recordStats(self):
         if(os.path.isfile("statsRecordNB.txt")):
 			statsRecord = open("statsRecordNB.txt", "ab") #append
         else:
             statsRecord = open("statsRecordNB.txt", "wb") #write
         
+        #load sets
+        Ytr = loadmat('train.mat')['YTr']
+        Xtr = loadmat('train.mat')['XTr']
+        
+        Yte = loadmat('test.mat')['YTe']
+        Xte = loadmat('test.mat')['XTe']
+        
+        correct = 0
+        #training performance
+        for i in range(12500, numpy.shape(Xtr)[0]):
+            
+            x = numpy.zeros([1416, 1])
+            
+            if(i%10) == 0 and i != 0:
+                print "correct: ", correct
+                print "i: ", i
+            x = numpy.transpose(Xtr[i,:].todense())
+            yhat = self.singleClassify(x)
+            if(yhat ==  Ytr[i]):
+                correct += 1
+                
+        trainAcc = correct / numpy.shape(Xtr)[0]
+        print "trainAcc: ", trainAcc
+        
+        '''
         string = 'evaluating best %d features\n' % num
         string += 'train on %d instances, test on %d instances(using handwritten algorithm)\n' % (len(trainFeatures), len(testFeatures))
         accuracy = nltk.classify.util.accuracy(classifier, testFeatures)
@@ -58,14 +85,7 @@ class Model():
         statsRecord.write(string2)
         statsRecord.close()
         print "finished NB features(%d)" % num
-        
-            
-    def best_word_features(self, words):
-        return dict([(word, True) for word in words if word in best_words])
-    
-    def make_full_dict(self, words):
-        return dict([(word, True) for word in words])
-    
+        '''
     def evaluate_features(self, feature_select, num):
         posFeatures=[]
         negFeatures=[]
@@ -79,13 +99,7 @@ class Model():
                 negWords = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
                 negWords = [feature_select(negWords), 'neg']
                 negFeatures.append(negWords)
-    
-        #3/4 of features for training, 1/4 for testing
-        posCutoff = int(math.floor(len(posFeatures)*3/4))
-        negCutoff = int(math.floor(len(negFeatures)*3/4))
-        trainFeatures = posFeatures[:posCutoff] + negFeatures[:negCutoff]
-        testFeatures = posFeatures[posCutoff:] + negFeatures[negCutoff:]
-        
+                
         ######
         #CLASSIFIER
         ######
@@ -93,81 +107,37 @@ class Model():
         #print trainFeatures
         
         #train an nltk classifier and non-nltk classifier
-        classifier_nltk = NaiveBayesClassifier.train(trainFeatures)
-        classifier = nbHand.nbClassifierHand.train(trainFeatures)
+        #classifier_nltk = NaiveBayesClassifier.train(trainFeatures)
         
         #save classifiers for later
-        f = open('nbclassifier.pickle', 'wb')
-        pickle.dump(classifier, f)
-        f.close()
+       
         
-        ff = open('nbclassifier_nltk.pickle', 'wb')
-        pickle.dump(classifier_nltk, ff)
-        ff.close()
-        
-        #make reference set and test sets
-        referenceSets = collections.defaultdict(set)
-        testSets = collections.defaultdict(set)
-        
-        referenceSets_nltk = collections.defaultdict(set)
-        testSets_nltk = collections.defaultdict(set)
+        #ff = open('nbclassifier_nltk.pickle', 'wb')
+        #pickle.dump(classifier_nltk, ff)
+        #ff.close()
         
         #put correctly labeled sentences in reference, predictively labeled in test sets
         for i, (features, label) in enumerate(testFeatures):
-            referenceSets[label].add(i)
-            referenceSets_nltk[label].add(i)
             predicted = classifier.classify(features)
-            predicted_nltk = classifier_nltk.classify(features)
-            testSets[predicted].add(i)
-            testSets_nltk[predicted_nltk].add(i)
-        
-        classifier.show_most_informative_features(100)    
-        self.recordStats(referenceSets, referenceSets_nltk, predicted, predicted_nltk, testSets, testSets_nltk, trainFeatures, testFeatures, classifier, classifier_nltk, num)
+         
+        self.recordStats()
     #end evaluate_features(feature_select)
     
-    def create_word_scores(self):
-        #make list of pos and neg words
-        posWords=[]
-        negWords=[]
-        with open(POS_FILE, 'r') as posSentences:
-            for i in posSentences:
-                posWord = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
-                posWords.append(posWord)
-    	with open(NEG_FILE, 'r') as negSentences:
-            for i in negSentences:
-                negWord = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
-                negWords.append(negWord)
-        posWords = list(itertools.chain(*posWords))
-        negWords = list(itertools.chain(*negWords))
+    def train(self):
+        Ytr = loadmat('train.mat')['YTr']
+        Xtr = loadmat('train.mat')['XTr']
         
-        #build freq dist of all words, then of words with pos/neg labels
-        word_fd = nltk.FreqDist()
-        cond_word_fd = nltk.ConditionalFreqDist()
-        for word in posWords:
-            word_fd[word.lower()] += 1
-            cond_word_fd['pos'][word.lower()] += 1
-        for word in negWords:
-            word_fd[word.lower()] += 1
-            cond_word_fd['neg'][word.lower()] += 1
+        self.cond_prob_pos = numpy.transpose(csc_matrix.sum(Xtr[numpy.squeeze(Ytr==1),:],2) / numpy.sum(Ytr))
+        self.cond_prob_neg = numpy.transpose(csc_matrix.sum(Xtr[numpy.squeeze(Ytr==0),:],2) / numpy.sum(Ytr==0))
         
-        #finds num of pos and neg words/total num of words
-        pos_word_count = cond_word_fd['pos'].N()
-        neg_word_count = cond_word_fd['neg'].N()
-        total_word_count = pos_word_count + neg_word_count
         
-        #build dict of words based on chi-squared test    
-        word_scores = {}
-        for word, freq in word_fd.iteritems():
-            pos_score = nltk.BigramAssocMeasures.chi_sq(cond_word_fd['pos'][word], (freq, pos_word_count), total_word_count)
-            neg_score = nltk.BigramAssocMeasures.chi_sq(cond_word_fd['neg'][word], (freq, neg_word_count), total_word_count)    
-            word_scores[word] = pos_score + neg_score
-            
-        return word_scores
-    #end create_word_scores(self)
+
     
-    def find_best_words(self, word_scores, number):
-        wordScores = self.create_word_scores()
-        best_vals = sorted(wordScores.iteritems(), key=lambda (w,s):s, reverse=True)[:number]
-        global best_words; 
-        best_words = set([w for w, s in best_vals])
-        return best_words
+    def singleClassify(self, featureVec):
+        #print "singclass shape pos: " , numpy.shape(self.cond_prob_pos)
+        #print "singclass shape neg: " , numpy.shape(self.cond_prob_neg)
+        neg = numpy.sum(numpy.log(numpy.multiply(featureVec, self.cond_prob_neg) + numpy.multiply(1-featureVec, 1-self.cond_prob_neg)))
+        pos = numpy.sum(numpy.log(numpy.multiply(featureVec, self.cond_prob_pos) + numpy.multiply(1-featureVec, 1-self.cond_prob_pos)))
+        print "sg pos: ", pos
+        print "sg neg: ", neg
+        return pos > neg

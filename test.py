@@ -2,10 +2,10 @@ import logging
 import numpy as np
 from optparse import OptionParser
 import sys
+import re
 from time import time
 import matplotlib.pyplot as plt
-
-
+from itertools import chain
 from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import HashingVectorizer
@@ -22,21 +22,47 @@ from sklearn.neighbors import NearestCentroid
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.extmath import density
 from sklearn import metrics
+from sklearn.svm import libsvm
 
 categories = ['pos', 'neg']
 
 data_train = ["great movie", "awesome movie", "horrible never watch again", "bad movie"]
-data_train_target = [0, 0, 1, 1]
+data_train_target = [1, 1, 0, 0]
 
 data_test = ["great to watch", "awesome to watch", "horrible to watch", "bad to watch"]
-data_test_target = [0, 0, 1, 1]
+data_test_target = [1, 1, 0, 0]
+
+#load positive and negative words
+posFeatures = []
+negFeatures = []
+allFeatures = []
+with open('combinedPos', 'r') as posSentences:
+	for i in posSentences:
+		posWords = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
+		posFeatures.append(posWords)
+		allFeatures.append(posWords)
+with open('combinedNeg', 'r') as negSentences:
+	for i in negSentences:
+		negWords = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
+		negFeatures.append(negWords)
+		allFeatures.append(negWords)
+		
+	
+#assign appropriate number of 1's and 0's
+dataTrainTarget = []
+for i in posFeatures:
+	dataTrainTarget.append(1)
+for i in negFeatures:
+	dataTrainTarget.append(0)
 
 #split into training and test set
 y_train, y_test = data_train_target, data_test_target
+#y_train, y_test = dataTrainTarget, data_test_target
 
 #extract features from training data using sparse vectorizer
 vectorizer = HashingVectorizer(stop_words='english', non_negative=True)
 X_train = vectorizer.fit_transform(data_train)
+#X_train = vectorizer.fit_transform(allFeatures)
 
 #extract features from test data using same vectorizer
 X_test = vectorizer.transform(data_test)

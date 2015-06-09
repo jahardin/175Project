@@ -1,162 +1,82 @@
-import csv
-import random
+import sys
 import os
-import re, math, collections, itertools
-import nltk
-import pickle
-import interface
+import time
+ 
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import svm
-
-POS_FILE = 'combinedPos'
-NEG_FILE = 'combinedNeg'
-
-class Model():
-    def trainSVC(self):
-        print "in train svc model"
-        numbers_to_test = [10, 100, 1000, 10000, 15000]
-        wordScores = self.create_word_scores()
-        try:
-            os.remove("statsRecordSVC.txt")
-        except OSError:
-            pass
-        for num in numbers_to_test:
-            best_words = self.find_best_words(wordScores, num)
-            self.evaluate_features(self.best_word_features, num)
-        
-    def recordStats(self, referenceSets, predicted, testSets, trainFeatures, testFeatures, classifier, num):
-        if(os.path.isfile("statsRecordSVC.txt")):
-			statsRecord = open("statsRecordSVC.txt", "ab") #append
-        else:
-            statsRecord = open("statsRecordSVC.txt", "wb") #write
-        
-        string = 'evaluating best %d features\n' % num
-        string += 'train on %d instances, test on %d instances(using handwritten algorithm)\n' % (len(trainFeatures), len(testFeatures))
-        accuracy = nltk.classify.util.accuracy(classifier, testFeatures)
-        string += 'accuracy: %f\n' % accuracy
-        posprec = nltk.metrics.precision(referenceSets['pos'], testSets['pos'])
-        string += 'pos precision: %f\n' % posprec
-        posrecall = nltk.metrics.precision(referenceSets['pos'], testSets['pos'])
-        string += 'pos recall: %f\n' % posrecall
-        negprec = nltk.metrics.precision(referenceSets['neg'], testSets['neg'])
-        string += 'neg precision: %f\n' % negprec
-        negrecall = nltk.metrics.recall(referenceSets['neg'], testSets['neg'])
-        string += 'neg recall: %f\n\n' % negrecall
-        statsRecord.write(string)
-        
-        string2 = 'evaluating best %d features\n' % num
-        string2 += 'train on %d instances, test on %d instances(using NLTK algorithm)\n' % (len(trainFeatures), len(testFeatures))
-        accuracy2 = nltk.classify.util.accuracy(classifier_nltk, testFeatures)
-        string2 += 'accuracy: %f\n' % accuracy
-        posprec2 = nltk.metrics.precision(referenceSets_nltk['pos'], testSets_nltk['pos'])
-        string2 += 'pos precision: %f\n' % posprec
-        posrecall2 = nltk.metrics.precision(referenceSets_nltk['pos'], testSets_nltk['pos'])
-        string2 += 'pos recall: %f\n' % posrecall
-        negprec2 = nltk.metrics.precision(referenceSets_nltk['neg'], testSets_nltk['neg'])
-        string2 += 'neg precision: %f\n' % negprec
-        negrecall2 = nltk.metrics.recall(referenceSets_nltk['neg'], testSets_nltk['neg'])
-        string2 += 'neg recall: %f\n\n' % negrecall
-        statsRecord.write(string2)
-        statsRecord.close()
-        print "finished NB features(%d)" % num
-        
-            
-    def best_word_features(self, words):
-        return dict([(word, True) for word in words if word in best_words])
-    
-    def make_full_dict(self, words):
-        return dict([(word, True) for word in words])
-    
-    def evaluate_features(self, feature_select, num):
-        posFeatures=[]
-        negFeatures=[]
-        with open(POS_FILE, 'r') as posSentences:
-            for i in posSentences:
-                posWords = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
-                posWords = [feature_select(posWords), 'pos']
-                posFeatures.append(posWords)
-        with open(NEG_FILE, 'r') as negSentences:
-            for i in negSentences:
-                negWords = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
-                negWords = [feature_select(negWords), 'neg']
-                negFeatures.append(negWords)
-    
-        #3/4 of features for training, 1/4 for testing
-        posCutoff = int(math.floor(len(posFeatures)*3/4))
-        negCutoff = int(math.floor(len(negFeatures)*3/4))
-        trainFeatures = posFeatures[:posCutoff] + negFeatures[:negCutoff]
-        testFeatures = posFeatures[posCutoff:] + negFeatures[negCutoff:]
-        
-        ######
-        #CLASSIFIER
-        ######
-        #train the Classifiers
-        #print trainFeatures
-        
-        #train an nltk classifier and non-nltk classifier
-        classifier = LinearSVC
-        classifier.predict
-        
-        #save classifiers for later
-        f = open('svcclassifier.pickle', 'wb')
-        pickle.dump(classifier, f)
-        f.close()
-        
-        #make reference set and test sets
-        referenceSets = collections.defaultdict(set)
-        testSets = collections.defaultdict(set)
-        
-        #put correctly labeled sentences in reference, predictively labeled in test sets
-        for i, (features, label) in enumerate(testFeatures):
-            referenceSets[label].add(i)
-            predicted = classifier.classify(features)
-            testSets[predicted].add(i)
-            
-        self.recordStats(referenceSets, predicted, testSets, trainFeatures, testFeatures, classifier, num)
-    #end evaluate_features(feature_select)
-    
-    def create_word_scores(self):
-        #make list of pos and neg words
-        posWords=[]
-        negWords=[]
-        with open(POS_FILE, 'r') as posSentences:
-            for i in posSentences:
-                posWord = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
-                posWords.append(posWord)
-    	with open(NEG_FILE, 'r') as negSentences:
-            for i in negSentences:
-                negWord = re.findall(r"[\w']+|[.,!?;]", i.rstrip())
-                negWords.append(negWord)
-        posWords = list(itertools.chain(*posWords))
-        negWords = list(itertools.chain(*negWords))
-        
-        #build freq dist of all words, then of words with pos/neg labels
-        word_fd = nltk.FreqDist()
-        cond_word_fd = nltk.ConditionalFreqDist()
-        for word in posWords:
-            word_fd[word.lower()] += 1
-            cond_word_fd['pos'][word.lower()] += 1
-        for word in negWords:
-            word_fd[word.lower()] += 1
-            cond_word_fd['neg'][word.lower()] += 1
-        
-        #finds num of pos and neg words/total num of words
-        pos_word_count = cond_word_fd['pos'].N()
-        neg_word_count = cond_word_fd['neg'].N()
-        total_word_count = pos_word_count + neg_word_count
-        
-        #build dict of words based on chi-squared test    
-        word_scores = {}
-        for word, freq in word_fd.iteritems():
-            pos_score = nltk.BigramAssocMeasures.chi_sq(cond_word_fd['pos'][word], (freq, pos_word_count), total_word_count)
-            neg_score = nltk.BigramAssocMeasures.chi_sq(cond_word_fd['neg'][word], (freq, neg_word_count), total_word_count)    
-            word_scores[word] = pos_score + neg_score
-            
-        return word_scores
-    #end create_word_scores(self)
-    
-    def find_best_words(self, word_scores, number):
-        wordScores = self.create_word_scores()
-        best_vals = sorted(wordScores.iteritems(), key=lambda (w,s):s, reverse=True)[:number]
-        global best_words; 
-        best_words = set([w for w, s in best_vals])
-        return best_words
+from sklearn.metrics import classification_report
+ 
+def usage():
+    print("Usage:")
+    print("python %s <data_dir>" % sys.argv[0])
+ 
+if __name__ == '__main__':
+ 
+    data_dir = '/home/jacobus/Desktop/175Git/175Project'
+    classes = ['pos', 'neg']
+ 
+    # Read the data
+    train_data = []
+    train_labels = []
+    test_data = []
+    test_labels = []
+    for curr_class in classes:
+        dirname = os.path.join(data_dir, curr_class)
+        for fname in os.listdir(dirname):
+            with open(os.path.join(dirname, fname), 'r') as f:
+                content = f.read()
+                if fname.startswith('cv9'):
+                    test_data.append(content)
+                    test_labels.append(curr_class)
+                else:
+                    train_data.append(content)
+                    train_labels.append(curr_class)
+ 
+    # Create feature vectors
+    vectorizer = TfidfVectorizer(min_df=5,
+                                 max_df = 0.8,
+                                 sublinear_tf=True,
+                                 use_idf=True)
+    train_vectors = vectorizer.fit_transform(train_data)
+    test_vectors = vectorizer.transform(test_data)
+ 
+    # Perform classification with SVM, kernel=rbf
+    classifier_rbf = svm.SVC()
+    t0 = time.time()
+    classifier_rbf.fit(train_vectors, train_labels)
+    t1 = time.time()
+    prediction_rbf = classifier_rbf.predict(test_vectors)
+    t2 = time.time()
+    time_rbf_train = t1-t0
+    time_rbf_predict = t2-t1
+ 
+    # Perform classification with SVM, kernel=linear
+    classifier_linear = svm.SVC(kernel='linear')
+    t0 = time.time()
+    classifier_linear.fit(train_vectors, train_labels)
+    t1 = time.time()
+    prediction_linear = classifier_linear.predict(test_vectors)
+    t2 = time.time()
+    time_linear_train = t1-t0
+    time_linear_predict = t2-t1
+ 
+    # Perform classification with SVM, kernel=linear
+    classifier_liblinear = svm.LinearSVC()
+    t0 = time.time()
+    classifier_liblinear.fit(train_vectors, train_labels)
+    t1 = time.time()
+    prediction_liblinear = classifier_liblinear.predict(test_vectors)
+    t2 = time.time()
+    time_liblinear_train = t1-t0
+    time_liblinear_predict = t2-t1
+ 
+    # Print results in a nice table
+    print("Results for SVC(kernel=rbf)")
+    print("Training time: %fs; Prediction time: %fs" % (time_rbf_train, time_rbf_predict))
+    print(classification_report(test_labels, prediction_rbf))
+    print("Results for SVC(kernel=linear)")
+    print("Training time: %fs; Prediction time: %fs" % (time_linear_train, time_linear_predict))
+    print(classification_report(test_labels, prediction_linear))
+    print("Results for LinearSVC()")
+    print("Training time: %fs; Prediction time: %fs" % (time_liblinear_train, time_liblinear_predict))
+    print(classification_report(test_labels, prediction_liblinear))

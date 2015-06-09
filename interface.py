@@ -120,13 +120,11 @@ class Example(Frame):
         ###########
         #row 0
         trainNBBtn = Button(self, text="TrainNB", command=mainInterface.trainNB)
-        trainNBBtn.grid(row=0, column=1, sticky=N)
-        trainMultiBtn = Button(self, text="TrainMultiNB", command=mainInterface.trainMultiNB)
-        trainMultiBtn.grid(row=0, column=1, sticky=N+E)
-        trainDTBtn = Button(self, text="TrainDT", command=mainInterface.trainDT)
-        trainDTBtn.grid(row=0, column=1, sticky=N+W)
+        trainNBBtn.grid(row=0, column=1, sticky=N+E)
         trainSVCBtn = Button(self, text="TrainSVC", command=mainInterface.trainSVC)
-        trainSVCBtn.grid(row=0, column=1, sticky=S)
+        trainSVCBtn.grid(row=0, column=1, sticky=N+W)
+        showStatsBtn = Button(self, text="Show Stats", command=self.showStats)
+        showStatsBtn.grid(row=0, column=1, sticky=N)
         
         #row 1
         nbBtn = Button(self, text="NB", command=self.analyzeNB)
@@ -139,8 +137,7 @@ class Example(Frame):
         #row 2
         svcBtn = Button(self, text="SVC_nltk", command=self.analyzeSVC)
         svcBtn.grid(row=2, column=1, sticky=N+E)
-        showStatsBtn = Button(self, text="Show Stats", command=self.showStats)
-        showStatsBtn.grid(row=2, column=1, sticky=N)
+        
         dtBtn = Button(self, text="DT_nltk", command = self.analyzeDecisionTree_nltk)
         dtBtn.grid(row=2, column=1, sticky=N+W)
         
