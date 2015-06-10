@@ -1,2 +1,5 @@
 train on 18750 instances, test on 6250 instances
-accuracy 0.420680
+training accuracy 0.861520
+testing accuracy 0.843400
+precision 0.832057
+recall: 0.860480

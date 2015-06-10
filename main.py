@@ -3,7 +3,6 @@ import re, math, collections, itertools, os
 import pickle
 from ttk import Frame
 import interface
-import naiveBayesModel
 import logicalRegression
 import nbHand
 import os.path
@@ -42,6 +41,18 @@ class mainInterface():
     def analyzeNB(self, area, posneg):
         inp = area.get("1.0",'end-1c')
         wordList = re.sub("[^\w]", " ",  inp).split()
+        m = nbHand.Model()
+        posnegbool = m.inputClasify(wordList)
+        if(posnegbool == 1):
+            posnegword = 'pos'
+        else:
+            posnegword = 'neg'
+            
+        posneg.delete(1.0, END)
+        posneg.insert(INSERT, posnegword)
+        '''
+        inp = area.get("1.0",'end-1c')
+        wordList = re.sub("[^\w]", " ",  inp).split()
         feats = dict([(word, True) for word in wordList])
         #load trained classifier
         f = open('nbclassifier.pickle')
@@ -51,6 +62,7 @@ class mainInterface():
         posneg.delete(1.0, END)
         posneg.insert(INSERT, classifier.classify(feats))
         print classifier.classify(feats)
+        '''
         
     def analyzeNB_nltk(self, area, posneg):
         inp = area.get("1.0",'end-1c')

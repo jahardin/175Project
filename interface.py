@@ -119,8 +119,8 @@ class Example(Frame):
         #BUTTONS
         ###########
         #row 0
-        trainNBBtn = Button(self, text="TrainNB", command=mainInterface.trainNB)
-        trainNBBtn.grid(row=0, column=1, sticky=N+W)
+        trainNBBtn = Button(self, text="TrainClassifiers", command=mainInterface.trainNB)
+        trainNBBtn.grid(row=0, column=1, sticky=N)
         #trainSVCBtn = Button(self, text="TrainSVC", command=mainInterface.trainSVC)
         #trainSVCBtn.grid(row=0, column=1, sticky=N+E)
         
@@ -133,7 +133,7 @@ class Example(Frame):
         nltk_nb_btn.grid(row=1, column=1, sticky=N+W)
         
         #row 2
-        svcBtn = Button(self, text="SVC_nltk", command=self.analyzeSVC)
+        svcBtn = Button(self, text="SVM", command=self.analyzeSVC)
         svcBtn.grid(row=2, column=1, sticky=N+E)
         showStatsBtn = Button(self, text="Show Stats", command=self.showStats)
         showStatsBtn.grid(row=2, column=1, sticky=N)

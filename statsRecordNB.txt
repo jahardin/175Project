@@ -3,5 +3,3 @@ train on 18750 instances, test on 6250 instances
 accuracy: 0.85248
 pos precision: 0.918344094189
 pos recall: 0.77376
-neg precision: 0.804534144318
-neg recall: 0.9312

@@ -1,15 +1,8 @@
 
 
-
-LINEAR SVC(kernel=rbf)
-pos precision: 0.78
-pos recall: 0.88
-neg precision: 0.86
-neg recall: 0.75
-
-LINEAR SVC(kernel=linear)
-pos precision: 0.92
-pos recall: 0.91
-neg precision: 0.91
-neg recall: 0.92
+LINEAR SVM
+Training Accuracy: 95.0
+Testing Accuracy: 88.1
+precision: 87.29
+recall: 89.2
 
